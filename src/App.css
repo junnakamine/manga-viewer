@@ -36,3 +36,52 @@
     transform: rotate(360deg);
   }
 }
+
+.home {
+  display: flex;
+  background-color: #f9f9f9;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+}
+
+.home-manga {
+  background-color: white;
+  width: 40%;
+  height: 100%;
+}
+
+.home-manga-name {
+  margin-top: 2%;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.home-book-manga-button {
+  font-size: 20px
+}
+
+.manga-button-active {
+  background-color: #036868;
+  color: white;
+}
+
+.home-manga-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3%;
+  height: 80%;
+  width: 100%;
+}
+
+.home-manga-art-pic {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.home-manga-box h1{
+  font-weight: 400;
+}
