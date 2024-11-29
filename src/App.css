@@ -41,7 +41,6 @@
   display: flex;
   background-color: #f9f9f9;
   width: 100vw;
-  height: 100vh;
   justify-content: center;
 }
 
@@ -84,4 +83,23 @@
 
 .home-manga-box h1{
   font-weight: 400;
+}
+
+.seekbar-container {
+  width: 95%;
+  height: 25px;
+  background-color: #999999;
+  border-radius: 7px;
+  position: relative;
+  margin-bottom: 3%;
+}
+
+.seekbar-progress {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-30%, -30%);
+  background-color: #323232;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
 }

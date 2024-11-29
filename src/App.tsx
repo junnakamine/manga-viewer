@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import './App.css';
+import { click } from "@testing-library/user-event/dist/click";
 
 const MangaList = () => {
   const [mangas, setMangas] = useState<Manga[]>([]);
   const [curMangaIndex, setCurMangaIndex] = useState(0);
   const [curChapterIndex, setCurChapterIndex] = useState(0);
-  const [chapterDetails, setChapterDetails] = useState<ChapterDetails | null>(null); 
+  const [chapterDetails, setChapterDetails] = useState<ChapterDetails | null>(null);
   const [page, setPage] = useState(0)
+  const [isDragging, setIsDragging] = useState(false);
 
   // Interfaces when retrieving data 
   interface Manga {
@@ -16,7 +18,7 @@ const MangaList = () => {
   }
 
   interface ChapterDetails {
-    id: number;    
+    id: number;
     title: string;
     pages: Page[];
   }
@@ -37,12 +39,16 @@ const MangaList = () => {
     setCurMangaIndex(index);
     setCurChapterIndex(0);
     setPage(0)
+    const progress = document.querySelector('.seekbar-progress') as HTMLDivElement;
+    progress.style.left = `0%`;
   };
 
   // if different chapter is chosen
   const handleChapter = (index: number) => {
     setCurChapterIndex(index);
     setPage(0)
+    const progress = document.querySelector('.seekbar-progress') as HTMLDivElement;
+    progress.style.left = `0%`;
   };
 
   // If clicked on the manga art, then handle the logic to move to another page or chapter
@@ -58,9 +64,9 @@ const MangaList = () => {
         axios.get(`http://52.195.171.228:8080/chapters/${prevChapterID}/`)
           .then(response => {
             setChapterDetails(response.data);
-            const lastPageIndex = response.data.pages.length - 1; 
+            const lastPageIndex = response.data.pages.length - 1;
             setCurChapterIndex(prevChapterIndex);
-            setPage(lastPageIndex); 
+            setPage(lastPageIndex);
           })
           .catch(err => {
             console.error(err);
@@ -83,9 +89,41 @@ const MangaList = () => {
     const clickTargetWidth = clickTarget.offsetWidth;
     const xCoordInClickTarget = e.clientX - clickTarget.getBoundingClientRect().left;
     if (clickTargetWidth / 2 > xCoordInClickTarget) {
+      // Click left 
       handleClick(1)
     } else {
       handleClick(-1)
+    }
+  }
+
+  // When the user clicks on the seekbar circle 
+  const handleDragStart = (e: any) => {
+    setIsDragging(true);
+  }
+
+  // When the user stops clicking on seekbar circle 
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Handles when user drags along the seekbar 
+  const handleDrag = (e: any) => {
+    const seekbar = document.querySelector('.seekbar-container') as HTMLDivElement;
+    const clickTargetWidth = seekbar.offsetWidth;
+    const xCoordInClickTarget = e.clientX - seekbar.getBoundingClientRect().left;
+    // Makes sure user is dragging between the seekbar container 
+    if (isDragging && chapterDetails && xCoordInClickTarget >= 0 && xCoordInClickTarget <= clickTargetWidth) {
+      const xCoordInClickTarget = e.clientX - seekbar.getBoundingClientRect().left;
+      // This ensures that percentage doesn't reach 1 or page will equal chapterDetails.pages.length causing an error 
+      const maxPercentage = 0.9999;
+      const percentage = Math.min(Math.max(xCoordInClickTarget / clickTargetWidth, 0), maxPercentage);
+      const updatedPage = Math.floor(percentage * (chapterDetails.pages.length));
+      const progress = document.querySelector('.seekbar-progress') as HTMLDivElement;
+      if (progress) {
+        // Moves the seekbar circle across based on position of cursor 
+        progress.style.left = `${percentage * 100}%`;
+        setPage(updatedPage)
+      }
     }
   }
 
@@ -114,6 +152,18 @@ const MangaList = () => {
     }
   }, [curMangaIndex, curChapterIndex, mangas]);
 
+  // Tracks when user is clicking on seekbar 
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleDrag);
+      window.addEventListener("mouseup", handleDragEnd);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleDrag);
+      window.removeEventListener("mouseup", handleDragEnd);
+    }
+  }, [isDragging])
+
   return (
     <div className="home">
       <div className='home-manga'>
@@ -138,18 +188,31 @@ const MangaList = () => {
           ))}
         </div>
         <div className="home-manga-box">
-          <img 
-            src={chapterDetails?.pages[page].image.file} alt="not working" 
-            className= "home-manga-art-pic"
-            onClick={onClick}
-          />
+          {chapterDetails?.pages[page] ? (
+            <img
+              src={chapterDetails.pages[page].image.file}
+              alt="not working"
+              className="home-manga-art-pic"
+              onClick={onClick}
+            />
+          ) : (
+            <p>Loading...</p> 
+          )}
           <h1>
             {page + 1} / {chapterDetails?.pages.length}
           </h1>
+          <div className="seekbar-container">
+            <div className="seekbar-progress" onMouseDown={handleDragStart}>
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
   );
 }
 
 export default MangaList;
+
+
+
