@@ -113,7 +113,6 @@ const MangaList = () => {
     const xCoordInClickTarget = e.clientX - seekbar.getBoundingClientRect().left;
     // Makes sure user is dragging between the seekbar container 
     if (isDragging && chapterDetails && xCoordInClickTarget >= 0 && xCoordInClickTarget <= clickTargetWidth) {
-      const xCoordInClickTarget = e.clientX - seekbar.getBoundingClientRect().left;
       // This ensures that percentage doesn't reach 1 or page will equal chapterDetails.pages.length causing an error 
       const maxPercentage = 0.9999;
       const percentage = Math.min(Math.max(xCoordInClickTarget / clickTargetWidth, 0), maxPercentage);
